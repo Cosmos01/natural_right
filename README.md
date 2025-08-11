@@ -2,7 +2,7 @@
 
 多功能群管理插件，适用于 HoshinoBot v2. 
 
-项目地址 https://github.com/Cosmos01/Blue_Archive_HoshinoBot
+项目地址 [https://github.com/Cosmos01/natural_right](https://github.com/Cosmos01/natural_right)
 
 > [!CAUTION]
 > 有伤天和，谨慎配置
