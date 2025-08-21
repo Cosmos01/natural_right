@@ -184,6 +184,7 @@ def add_deduction_count(gid, uid, probation):
     if deduction_count > user["ban_count"]:
         deduction_count = user["ban_count"]
     user["deduction_count"] = deduction_count
+    user["update_time"] = time.time()
     return user["deduction_count"]
 
 
@@ -396,3 +397,4 @@ async def check_user_role(ev, uid = None, role = "admin"):
     elif role == "superuser":
         return uid in hoshino.config.SUPERUSERS
     return False
+
