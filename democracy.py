@@ -207,6 +207,10 @@ async def vote_refresh(bot, ev):
     if not await check_user_role(ev, role=config.manager):
         return
     users = list_at_users(ev.message)
-    for uid in users:
-        del group_data[ev.group_id][uid]
+    if len(users) == 0:
+        group_data[ev.group_id] = {}
+    else:
+        for uid in users:
+            del group_data[ev.group_id][uid]
     await bot.send(ev, f"重置完成")
+
