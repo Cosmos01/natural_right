@@ -10,7 +10,6 @@ help_msg = '''
 举报@对象[关键词]: 投票禁言
 投反对票@对象: 消掉一票
 查询举报关键词: 获取支持的举报关键词，在投票后加上关键词会计入严重违规
-刷新cd/重置投票+@对象1@对象…
 '''
 
 sv = Service('德谟克拉西', enable_on_default=False, help_=help_msg)
@@ -202,6 +201,8 @@ async def query_serious_words(bot, ev):
     await bot.send(ev, f"举报关键词：{config.serious_words}\n阈值：{config.serious_threshold_scale}\n带关键词的投票占比大于阈值时判断为严重违规")
 
 
+
+
 @sv.on_prefix(("刷新cd", "重置投票"))
 async def vote_refresh(bot, ev):
     if not await check_user_role(ev, role=config.manager):
@@ -210,6 +211,3 @@ async def vote_refresh(bot, ev):
     for uid in users:
         del group_data[ev.group_id][uid]
     await bot.send(ev, f"重置完成")
-
-
-
