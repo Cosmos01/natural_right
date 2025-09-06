@@ -1,8 +1,11 @@
+from nonebot import on_command
+import hoshino.priv
 from hoshino.typing import NoticeSession
 from hoshino import Service, priv
 from .core import *
 from .config import BasicConfig, Tags
-from .utils import list_at_users
+from .utils import list_at_users, get_time
+import datetime
 
 help_msg = '''
 查询圣盾术 [@user1@user2...] 
@@ -10,12 +13,16 @@ help_msg = '''
 权限标签 [添加/删除 标签名[:标签值] @user1@user2...]
 群友连结 [解除] @user1@user2...
 群地位 +1/-1 [@user1@user2...]
+屏蔽本群[X天|X小时|X分钟]
+解除群屏蔽
+屏蔽@user [X天|X小时|X分钟]
+解除屏蔽@user
+引用消息并回复【撤回】
 '''
 
 sv = Service('天赋人权', enable_on_default=False, help_=help_msg)
 
 config = BasicConfig()
-
 
 @sv.on_prefix("查询圣盾术")
 async def query_indulgences(bot, ev):
@@ -196,3 +203,73 @@ async def set_group_level(bot, ev):
         name = await get_user_name(ev, uid)
         msg += f"{name}: {user_level}\n"
     await bot.send(ev, msg.strip())
+
+
+
+@sv.on_prefix('屏蔽')
+async def block_on(bot, ev):
+    if not await check_user_role(ev, role="admin"):  # 我要看到血流成河
+        return
+    t = get_time(ev.message.extract_plain_text().replace(' ', ''))
+    if "本群" in ev.message.extract_plain_text() and len(ev.message.extract_plain_text()) < 12:
+        if not await check_user_role(ev, role=config.manager):
+            return
+        await bot.send(ev, "收到")
+        hoshino.priv.set_block_group(ev.group_id, t)
+        return
+    users = list_at_users(ev.message)
+    if len(users) == 0:
+        await bot.send(ev, "请指定要被屏蔽的目标")
+        return
+    for suid in hoshino.config.SUPERUSERS:
+        if suid in users:
+            hoshino.priv.set_block_user(ev.user_id,t)
+            await bot.send(ev, "？")
+            await bot.send(ev, f"已屏蔽[CQ:at,qq={ev.user_id}]")
+            return
+    await bot.send(ev, "收到")
+    for uid in users:
+        hoshino.priv.set_block_user(uid,t)
+    return
+
+
+@on_command('解除群屏蔽', only_to_me=False, shell_like=True)
+async def block_off(session):
+    ev = session.event
+    if not await check_user_role(ev, role=config.manager):
+        return
+    if hoshino.priv.check_block_group(ev.group_id):
+        hoshino.priv.set_block_group(ev.group_id, datetime.timedelta(seconds=-1))
+        await session.send(f"我回来啦！")
+    else :
+        await session.send(f"我明明一直都在！")
+
+
+@sv.on_prefix('解除屏蔽')
+async def user_block_off(bot, ev):
+    if not await check_user_role(ev, role=config.manager):
+        return
+    users = list_at_users(ev.message)
+    if len(users) > 0:
+        for uid in users:
+            hoshino.priv.set_block_user(uid, datetime.timedelta(seconds=-1))
+        await bot.send(ev, "已解除屏蔽")
+    return
+
+
+@sv.on_suffix("撤回")
+async def del_message(bot, ev):
+    msg_id = 0
+    for i in ev.message:
+        if i.type == 'reply':
+            msg_id = i.data["id"]
+            break
+    if msg_id == 0:
+        return
+    source_msg = await bot.get_msg(message_id=msg_id)
+    source_qq = source_msg['sender']['user_id']
+    if source_qq != ev.user_id and source_qq != ev.self_id:
+        return
+    await bot.delete_msg(message_id=msg_id, self_id=ev.self_id)
+
+
