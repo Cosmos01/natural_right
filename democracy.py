@@ -132,7 +132,7 @@ async def vote(bot, ev):
 
             elect.ban_duration = config.serious_ban_duration
             history_ban_count = add_ban_count(gid, uid)
-            magnification2 = config.repeat_offender ** (history_ban_count - 1 - deduction_count)
+            magnification2 = config.repeat_offender ** (history_ban_count - deduction_count)
             if history_ban_count > 0:
                 await bot.send(ev,
                                f"[CQ:at,qq={uid}]严重违规累计{history_ban_count} ({-1 * deduction_count})次，额外倍率：{round(magnification2, 2)}倍")
