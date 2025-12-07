@@ -191,7 +191,6 @@ async def curfew_listener(bot, ev):
         await bot.send(ev, f"检测到[CQ:at,qq={uid}]第{target_groups[gid][uid]}次发送违规消息")
     # 转发到群聊
     if group["curfew_msg_forward"] > 0:
-        user_name = await get_user_name(ev)
         forward_gid = 0
         if group["curfew_msg_forward"] != ev.group_id:
             group_list = await bot.get_group_list(self_id=ev.self_id)
@@ -205,9 +204,7 @@ async def curfew_listener(bot, ev):
             forward_msg = [{
                 "type": "node",
                 "data": {
-                    "name": user_name,
-                    "uin": str(uid),
-                    "content": ev.raw_message
+                    "id": str(ev.message_id)
                 }
             }]
             await bot.send_group_forward_msg(group_id=forward_gid, messages=forward_msg)
@@ -376,4 +373,5 @@ def keyword_in_msg(msg, keywords):
         if kw in msg:
             return True
     return False
+
 
