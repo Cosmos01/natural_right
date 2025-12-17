@@ -148,15 +148,14 @@ async def curfew_listener(bot, ev):
     if hoshino.priv.check_priv(ev, hoshino.priv.ADMIN) or get_user_level(gid, ev.user_id) > config.limit_level:
        return
     # 非宵禁中的屏蔽词检测
-    if group["literary_inquisition"]:
-        if len(group["keywords"]) == 0:
-            return
+    if group["literary_inquisition"] and len(group["keywords"]) > 0:
         if keyword_in_msg(ev.message.extract_plain_text(), group["keywords"]):
             if group["curfew_msg_notice"]:
                 await bot.send(ev, f"检测到[CQ:at,qq={ev.user_id}]发送违规消息")
             await bot.delete_msg(message_id=ev.message_id, self_id=ev.self_id)
             if config.speech_duration > 0:
                 await silence(ev, config.increase)
+            return
 
     # 非目标群
     if ev.group_id not in target_groups.keys():
@@ -373,5 +372,6 @@ def keyword_in_msg(msg, keywords):
         if kw in msg:
             return True
     return False
+
 
 
