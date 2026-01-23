@@ -30,6 +30,7 @@ class Game:
 
     def __init__(self, player):
         self.players = [player]
+        self.killer = player
         self.eliminated = []
         self.index = 0
         self.add_index = -1  # 中途加入的位置
@@ -133,6 +134,7 @@ class Game:
             return None
         time_left_msg = get_time_text(int((self.timeout - datetime.now()).total_seconds()))
         prize_pool_msg = get_time_text(self.prize_pool)
+        self.killer = player
         return f"{self.count}回合，炸弹在[CQ:at,qq={self.get_player(next_index)}]手上，奖池{prize_pool_msg}，剩余{time_left_msg}"
 
     def quit_msg(self, player, flag=False):
@@ -270,7 +272,7 @@ async def game_start(bot, ev):
         game_limit.increase(uid)
         game_freq_limit.start_cd(1)
         loser = game.get_player(game.index)
-        killer = game.get_player(game.previous_index())
+        killer = game.killer
         msg = ""
         if game.prize_pool <= 0:
             msg = f"游戏结束，恭喜[CQ:at,qq={loser}]，但是禁言奖池已经空了，击杀者为[CQ:at,qq={killer}]"
@@ -355,3 +357,4 @@ async def explosion(bot, ev):
         return
     game.timeout = datetime.now()
     await bot.send(ev, f"第{game.count}回合，[CQ:at,qq={ev.user_id}]自爆")
+
